@@ -1,0 +1,19 @@
+{
+  "name": "monorepo-vercel-workflow",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "type-check": "turbo type-check"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.3"
+  },
+  "packageManager": "pnpm@10.8.0",
+  "engines": {
+    "node": ">=18"
+  }
+}
