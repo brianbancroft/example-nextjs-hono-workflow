@@ -12,6 +12,10 @@ app.get("/", (c) => {
   return c.text(welcomeStrings.join("\n\n"));
 });
 
+app.get("/helloworld", (c) => {
+  return c.json({ hello: "world" });
+});
+
 const port = 4000;
 console.log(`Server is running on http://localhost:${port}`);
 
