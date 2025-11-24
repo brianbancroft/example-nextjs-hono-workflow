@@ -50,7 +50,7 @@ export default function Home() {
           try {
             const update: StreamUpdate = JSON.parse(line);
             setUpdates((prev) => [...prev, update]);
-            
+
             // Update progress bar if percentage is provided
             if (typeof update.percentage === "number") {
               setProgress(update.percentage);

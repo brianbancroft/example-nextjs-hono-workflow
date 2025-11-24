@@ -6,16 +6,12 @@ import { morningRoutineWorkflow } from "../workflows/morning-routine.js";
 const app = new Hono();
 
 const welcomeStrings = [
-  "Hello Hono!",
-  "To learn more about Hono on Vercel, visit https://vercel.com/docs/frameworks/backend/hono",
+  "Hello to the Hono Workflow API!",
+  "This is just a sample app that shows a bare-bones stream that employs workflow for async actions",
 ];
 
 app.get("/", (c) => {
   return c.text(welcomeStrings.join("\n\n"));
-});
-
-app.get("/helloworld", (c) => {
-  return c.json({ hello: "world" });
 });
 
 app.get("/helloworld-stream", (c) => {

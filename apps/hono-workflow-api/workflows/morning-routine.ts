@@ -65,8 +65,8 @@ export async function morningRoutineWorkflow() {
   await updateProgress("Opening the computer", 83.33);
   await sleep("3s");
 
-  // Task 6: Sending response (83.33% -> 100%)
-  await updateProgress("Sending response", 100);
+  // Task 6: Sending response (83.33% -> 95%)
+  await updateProgress("Sending response", 95);
   await sleep("8s");
 
   // Final completion message
