@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { serve } from "@hono/node-server";
+import { stream } from "hono/streaming";
 
 const app = new Hono();
 
@@ -14,6 +15,21 @@ app.get("/", (c) => {
 
 app.get("/helloworld", (c) => {
   return c.json({ hello: "world" });
+});
+
+app.get("/helloworld-stream", (c) => {
+  return stream(c, async (stream) => {
+    // Open stream
+    await stream.writeln("Stream opened");
+    await stream.sleep(500);
+    
+    // Send response
+    await stream.writeln(JSON.stringify({ hello: "world" }));
+    await stream.sleep(500);
+    
+    // Close stream
+    await stream.writeln("Stream closed");
+  });
 });
 
 const port = 4000;
