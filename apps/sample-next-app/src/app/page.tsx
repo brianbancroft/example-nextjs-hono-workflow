@@ -2,20 +2,24 @@
 
 import { useState } from "react";
 
+type StreamUpdate = {
+  message?: string;
+  percentage?: number;
+  status?: string;
+  [key: string]: unknown;
+};
+
 export default function Home() {
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [messages, setMessages] = useState<string[]>([]);
-  const [response, setResponse] = useState<{
-    success: boolean;
-    error: string | null;
-  } | null>(null);
+  const [updates, setUpdates] = useState<StreamUpdate[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const handleClick = async () => {
     setLoading(true);
-    setProgress(30);
-    setMessages([]);
-    setResponse(null);
+    setProgress(0);
+    setUpdates([]);
+    setError(null);
 
     try {
       const res = await fetch("/api/stream", {
@@ -23,11 +27,7 @@ export default function Home() {
       });
 
       if (!res.ok || !res.body) {
-        setProgress(100);
-        setResponse({
-          success: false,
-          error: `HTTP error! status: ${res.status}`,
-        });
+        setError(`HTTP error! status: ${res.status}`);
         setLoading(false);
         return;
       }
@@ -39,11 +39,6 @@ export default function Home() {
         const { done, value } = await reader.read();
 
         if (done) {
-          setProgress(100);
-          setResponse({
-            success: true,
-            error: null,
-          });
           setLoading(false);
           break;
         }
@@ -52,16 +47,24 @@ export default function Home() {
         const lines = text.split("\n").filter((line) => line.trim());
 
         for (const line of lines) {
-          setMessages((prev) => [...prev, line]);
+          try {
+            const update: StreamUpdate = JSON.parse(line);
+            setUpdates((prev) => [...prev, update]);
+            
+            // Update progress bar if percentage is provided
+            if (typeof update.percentage === "number") {
+              setProgress(update.percentage);
+            }
+          } catch (e) {
+            // Skip lines that aren't valid JSON
+            console.error("Failed to parse line:", line, e);
+          }
         }
       }
     } catch (error) {
-      setProgress(100);
-      setResponse({
-        success: false,
-        error:
-          error instanceof Error ? error.message : "Unknown error occurred",
-      });
+      setError(
+        error instanceof Error ? error.message : "Unknown error occurred"
+      );
       setLoading(false);
     }
   };
@@ -70,7 +73,7 @@ export default function Home() {
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black p-8">
       <main className="flex flex-col items-center gap-8 max-w-2xl w-full">
         <h1 className="text-4xl font-bold text-black dark:text-zinc-50">
-          API Test Demo
+          Workflow API Test
         </h1>
 
         <button
@@ -81,42 +84,47 @@ export default function Home() {
           {loading && (
             <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
           )}
-          {loading ? "Streaming..." : "Stream Hello World"}
+          {loading ? "Streaming..." : "Test API"}
         </button>
 
-        {(messages.length > 0 || response) && (
-          <div
-            className={`w-full p-6 rounded-lg border-2 ${
-              response?.success === false
-                ? "bg-red-50 border-red-500 dark:bg-red-950/30 dark:border-red-700"
-                : response?.success === true
-                ? "bg-green-50 border-green-500 dark:bg-green-950/30 dark:border-green-700"
-                : "bg-blue-50 border-blue-500 dark:bg-blue-950/30 dark:border-blue-700"
-            }`}
-          >
+        {updates.length > 0 && (
+          <div className="w-full p-6 rounded-lg border-2 bg-blue-50 border-blue-500 dark:bg-blue-950/30 dark:border-blue-700">
             <h2 className="text-xl font-semibold mb-3 text-black dark:text-zinc-50">
-              Stream Response
+              Stream Updates
             </h2>
             <div className="space-y-2">
-              {messages.map((msg, index) => (
+              {updates.map((update, index) => (
                 <div
                   key={index}
                   className="bg-white dark:bg-black p-3 rounded border border-gray-300 dark:border-gray-700 animate-[fadeIn_0.3s_ease-in]"
                 >
-                  <p className="text-sm text-gray-800 dark:text-gray-200 font-mono">
-                    {msg}
-                  </p>
+                  <div className="flex justify-between items-center gap-4">
+                    <p className="text-sm text-gray-800 dark:text-gray-200 font-medium flex-1">
+                      {update.message || JSON.stringify(update)}
+                    </p>
+                    {typeof update.percentage === "number" && (
+                      <span className="text-xs text-gray-600 dark:text-gray-400 font-mono">
+                        {update.percentage.toFixed(1)}%
+                      </span>
+                    )}
+                  </div>
+                  {update.status === "complete" && (
+                    <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                      ✓ Complete
+                    </p>
+                  )}
                 </div>
               ))}
             </div>
-            {response && response.error && (
-              <div className="mt-4 text-red-800 dark:text-red-300">
-                <p className="font-medium mb-2">Error:</p>
-                <p className="bg-white dark:bg-black p-3 rounded border border-red-300 dark:border-red-800">
-                  {response.error}
-                </p>
-              </div>
-            )}
+          </div>
+        )}
+
+        {error && (
+          <div className="w-full p-6 rounded-lg border-2 bg-red-50 border-red-500 dark:bg-red-950/30 dark:border-red-700">
+            <h2 className="text-xl font-semibold mb-3 text-red-900 dark:text-red-100">
+              Error
+            </h2>
+            <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
           </div>
         )}
 

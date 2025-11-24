@@ -1,6 +1,7 @@
 import { Hono } from "hono";
-import { serve } from "@hono/node-server";
 import { stream } from "hono/streaming";
+import { start } from "workflow/api";
+import { morningRoutineWorkflow } from "../workflows/morning-routine.js";
 
 const app = new Hono();
 
@@ -32,12 +33,26 @@ app.get("/helloworld-stream", (c) => {
   });
 });
 
-const port = 4000;
-console.log(`Server is running on http://localhost:${port}`);
+app.get("/workflow-stream", async (c) => {
+  const run = await start(morningRoutineWorkflow);
 
-serve({
-  fetch: app.fetch,
-  port,
+  // Transform the stream to encode JSON objects as text
+  const textStream = run.readable.pipeThrough(
+    new TransformStream({
+      transform(chunk, controller) {
+        const text = JSON.stringify(chunk) + "\n";
+        controller.enqueue(new TextEncoder().encode(text));
+      },
+    })
+  );
+
+  // Return the readable stream to the client
+  return new Response(textStream, {
+    headers: {
+      "Content-Type": "application/json",
+      "Transfer-Encoding": "chunked",
+    },
+  });
 });
 
 export default app;

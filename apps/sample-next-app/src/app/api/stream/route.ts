@@ -1,6 +1,6 @@
 export async function GET() {
   try {
-    const response = await fetch("http://localhost:4050/helloworld-stream", {
+    const response = await fetch("http://localhost:4050/workflow-stream", {
       method: "GET",
     });
 
@@ -17,7 +17,7 @@ export async function GET() {
     // Return the stream directly
     return new Response(response.body, {
       headers: {
-        "Content-Type": "text/plain; charset=utf-8",
+        "Content-Type": "application/json",
         "Transfer-Encoding": "chunked",
       },
     });
