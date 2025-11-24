@@ -59,7 +59,8 @@ export default function Home() {
       setProgress(100);
       setResponse({
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error occurred",
+        error:
+          error instanceof Error ? error.message : "Unknown error occurred",
       });
       setLoading(false);
     }

@@ -22,11 +22,11 @@ app.get("/helloworld-stream", (c) => {
     // Open stream
     await stream.writeln("Stream opened");
     await stream.sleep(500);
-    
+
     // Send response
     await stream.writeln(JSON.stringify({ hello: "world" }));
     await stream.sleep(500);
-    
+
     // Close stream
     await stream.writeln("Stream closed");
   });
